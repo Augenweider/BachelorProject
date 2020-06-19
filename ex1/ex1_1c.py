@@ -121,13 +121,15 @@ class Not(Operator):
         side = self.parent.getSide(self)
         if not isinstance(self.left, str):
             if self.left.operator == "Or":
-                exec(
-                    "self.parent.%s = And(Not(self.left.left), Not(self.left.right))" % side)
+                exec("self.parent.%s = And(Not(self.left.left), Not(self.left.right))" % side)
+                exec("self.parent.%s.parent = self.parent" % side)
             if self.left.operator == "And":
-                exec(
-                    "self.parent.%s = Or(Not(self.left.left), Not(self.left.right))" % side)
+                exec("self.parent.%s = Or(Not(self.left.left), Not(self.left.right))" % side)
+                exec("self.parent.%s.parent = self.parent" % side)
             if self.left.operator == "Not":
                 exec("self.parent.%s = self.left.left" % side)
+                if not isinstance(self.left.left, str):
+                    exec("self.parent.%s.parent = self.parent" % side)
 
 
 class Var(SyntaxTree):
@@ -197,6 +199,6 @@ def dimacs_generator(tree, v):
 
 
 if __name__ == '__main__':
-    parser("And(Impl(Not(a), b), And(Not(b), Not(a)))")
+    parser("And(Impl(And(Not(a), b), c), And(Not(b), Not(a)))")
     parser("And(Or(Not(a), b), And(Not(b), Not(a)))")
     parser("And(Or(Or(Not(a), c), b), And(And(Not(b), c), Not(a)))")
